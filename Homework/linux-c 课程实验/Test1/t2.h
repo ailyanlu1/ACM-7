@@ -6,6 +6,10 @@
 #ifndef _ARRAYLIST_H_
 #define _ARRAYLIST_H_
 
+#include <stdexcept>
+
+using std::invalid_argument;
+using std::bad_alloc;
 
 class ArrayList {
 private:
@@ -44,15 +48,25 @@ public:
     void modify(int pos, int newValue);
 
     void disp() const;
+
+    //赋值运算符重载
+    ArrayList &operator=(const ArrayList &rhs);
+
+    ArrayList &operator+=(const ArrayList &rhs);
+
+    //方括号运算符重载
+    int &operator[](int pos);
+
+    const int &operator[](int pos) const;
 };
 
 #endif // _ARRAYLIST_H_
 
 #include <cstdio>
+#include <algorithm>
 
-inline int min(int x, int y) {
-    return (x < y) ? x : y;
-}
+using namespace std;
+
 
 ArrayList::ArrayList() {
     this->data = nullptr;
@@ -92,15 +106,18 @@ void ArrayList::setCapacity(int newCapa) {
     }
     delete[]this->data;
     this->data = data;
-    this->size = this->capacity = newCapa;
+    this->size = min(newCapa, this->size);
+    this->capacity = newCapa;
 }
 
 void ArrayList::insert(int pos, int value) {
-    this->setCapacity(this->size + 1);
-    for (int i = this->size - 1; i > pos; --i)
+    if (this->size == this->capacity)
+        this->setCapacity(this->size + 1);
+
+    for (int i = this->size; i > pos; --i)
         this->data[i] = this->data[i - 1];
-    this->data[pos] = value;
     this->size++;
+    this->data[pos] = value;
 }
 
 void ArrayList::remove(int pos) {
@@ -121,4 +138,36 @@ void ArrayList::disp() const {
     for (int i = 0; i < this->size; ++i)
         printf("%d ", this->data[i]);
     printf("\n");
+}
+
+ArrayList &ArrayList::operator=(const ArrayList &rhs) {
+    printf("=\n");
+    if (this->data != nullptr)delete[]this->data;
+    this->size = rhs.getSize();
+    this->data = new int[this->size];
+    this->capacity = this->size;
+    for (int i = 0; i < this->size; ++i)
+        this->data[i] = rhs.at(i);
+//    disp();
+    return *this;
+}
+
+ArrayList &ArrayList::operator+=(const ArrayList &rhs) {
+//    disp();
+//    rhs.disp();
+    printf("+=\n");
+    for (int i = 0; i < rhs.getSize(); ++i) {
+        this->insert(this->getSize(), rhs.at(i));
+    }
+//    disp()
+    //printf("size %d\n", this->size);
+    return *this;
+}
+
+int &ArrayList::operator[](int pos) {
+    return this->data[pos];
+}
+
+const int &ArrayList::operator[](int pos) const {
+    return this->data[pos];
 }
