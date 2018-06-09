@@ -2,7 +2,7 @@
 *.cbp
 *.depend
 *.layout
-**/bin/Debug/
+**/bin
 
 # temp files
 tmp
@@ -10,7 +10,7 @@ in.txt
 out.txt
 
 # clion files
-cmake-build-debug/
+cmake-build-debug
 .idea
 
 

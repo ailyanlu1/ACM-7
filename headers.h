@@ -21,24 +21,10 @@
 //                                                      //
 //     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~      //
 //                                                      //
-//               佛祖保佑         永无BUG               //
+//               佛祖保佑         永无BUG                //
 //////////////////////////////////////////////////////////
 
-#include <cstdio>
-#include <iostream>
-#include <iomanip>
-#include <cassert>
-#include <cmath>
-#include <cstring>
-#include <climits>
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <set>
-#include <map>
-#include <set>
-#include <stack>
-#include <queue>
+#include <bits/stdc++.h>
 
 #define CLEAR(a) memset((a),0,sizeof(a))
 #define FLAG(a) memset((a),-1,sizeof(a))
@@ -49,9 +35,9 @@
 #define Ans(x) printf("%d\n",(x))
 #define readfile(path)  freopen( (path) , "r", stdin )
 #define writefile(path) freopen( (path) , "w", stdout )
-#define eps 1e-9
 using namespace std;
 typedef long long llt;
+double const eps = 1e-9;
 double const PI = acos(-1.0);
 
 template<typename T>
