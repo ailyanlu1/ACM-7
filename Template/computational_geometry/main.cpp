@@ -1,102 +1,145 @@
 #include "../../headers.h"
 
 typedef double int_t;
-long double const eps = 1e-9;
+//double const eps = 1e-9;
 
-inline int dcmp( long double x){if(x > eps) return 1;return x < -eps ? -1 : 0;}
-inline double toRad( double angle ){ return (angle/180*PI);}
-inline int quadrant(int_t x,int_t y){if ( y >= 0 ) return x > 0 ? 0 : 1;return x <= 0 ? 2 : 3;}
+inline int dcmp(long double x) {
+    if (x > eps) return 1;
+    return x < -eps ? -1 : 0;
+}
 
-struct point_t{
-    double x,y;
-    int id;
-    point_t( int_t xx=0,int_t yy=0 ): x(xx),y(yy){};
-    bool operator == (  point_t const&a )const {return dcmp(a.x-x) == 0 && dcmp(a.y-y) == 0;}
-    bool operator != (  point_t const&a )const {return ! (*this == a ); }
-    bool operator <  (  point_t const&a )const {return a.x != x ?  x < a.x : y < a.y;}
-    friend ostream &operator<<(ostream &os,const point_t &p){os << "(" << p.x << ","<< p.y << ")";return os;}
+inline double toRad(double angle) { return (angle / 180 * PI); }
+
+inline int quadrant(int_t x, int_t y) {
+    if (y >= 0) return x > 0 ? 0 : 1;
+    return x <= 0 ? 2 : 3;
+}
+
+struct point_t {
+    double x, y;
+
+//    int id;
+    explicit point_t(int_t xx = 0, int_t yy = 0) : x(xx), y(yy) {};
+
+    bool operator==(point_t const &a) const { return dcmp(a.x - x) == 0 && dcmp(a.y - y) == 0; }
+
+    bool operator!=(point_t const &a) const { return !(*this == a); }
+
+    bool operator<(point_t const &a) const { return a.x != x ? x < a.x : y < a.y; }
+
+    friend ostream &operator<<(ostream &os, const point_t &p) {
+        os << "(" << p.x << "," << p.y << ")";
+        return os;
+    }
 };
-const point_t PO(0,0);
+
+const point_t PO(0, 0);
 typedef point_t vector_t;
 
-vector_t operator-(  vector_t a,vector_t b ) {return point_t( a.x-b.x,a.y-b.y);}
-vector_t operator*(  vector_t a,double t ) { return point_t( a.x*t,a.y*t);}
-vector_t operator/(  vector_t a,double t ) { return point_t( a.x/t,a.y/t);}
-vector_t operator+(  vector_t a,vector_t b ) {return point_t( a.x+b.x,a.y+b.y);}
+vector_t operator-(vector_t a, vector_t b) { return point_t(a.x - b.x, a.y - b.y); }
 
-struct segment_t{
-    point_t s,e;
-    int id;
-    segment_t ( point_t aa = point_t(0,0),point_t bb = point_t(0,0) ):s(aa),e(bb) {};
-    bool operator < ( segment_t const&sg )const{
+vector_t operator*(vector_t a, double t) { return point_t(a.x * t, a.y * t); }
+
+vector_t operator/(vector_t a, double t) { return point_t(a.x / t, a.y / t); }
+
+vector_t operator+(vector_t a, vector_t b) { return point_t(a.x + b.x, a.y + b.y); }
+
+struct segment_t {
+    point_t s, e;
+//    int id;
+
+    explicit segment_t(point_t aa = point_t(0, 0), point_t bb = point_t(0, 0)) : s(aa), e(bb) {};
+
+    bool operator<(segment_t const &sg) const {
         return s != sg.s ? s < sg.s : e < sg.e;
     }
 };
 
-/**< ²æ»ı oa * ob */
-inline int_t cross(point_t const &O,point_t const &A,point_t const &B){
-    return (A.x - O.x) * (B.y - O.y) - (B.x - O.x) * (A.y - O.y);}
-/**< µãµ½µãµÄ¾àÀë */
-inline int_t Point2Point(point_t const &a, point_t const &b) {
-    return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));}
-/**< Ïß¶ÎµÄÖĞµã */
-inline point_t SegmentMid(point_t const &a, point_t const &b) {
-    return point_t ( (a.x+b.x)/2.0 , (a.y+b.y)/2.0 );}
-/**< ÏòÁ¿µÄµã»ı */
-double vector_dot ( vector_t const&a,vector_t const&b ){return a.x*b.x + a.y*b.y;}
-/**< ÏòÁ¿µÄ³¤¶È */
-double vector_length( vector_t const&a ){return sqrt(vector_dot(a,a));}
-/**< ÏòÁ¿µÄ¼Ğ½Ç */
-double vector_angle( vector_t const&a,vector_t const&b ){
-    double x = vector_dot(a,b)/vector_length(a)/vector_length(b);
-    if ( x > 1.0 ) x = 1.0;if ( x < -1.0) x = -1.0;return acos(x);}
-/**< ÏòÁ¿µÄ·¨Ïß ÊäÈëÒª±£Ö¤²»ÊÇÁãÏòÁ¿ */
-vector_t vector_normal( vector_t const&a ){double L = vector_length(a);return vector_t( -a.y/L , a.x/L );}
-/**< ÏòÁ¿Ğı×ª ÏòÁ¿aÄæÊ±ÕëĞı×ªrad  */
-vector_t vector_rotate( vector_t const&a, double rad ){
-    return vector_t( a.x*cos(rad)-a.y*sin(rad) , a.x*sin(rad)+a.y*cos(rad) );}
-/**< µã°´ÏóÏŞ½ÇÅÅĞò */
-
-/**<  ÏÈ°´ÏóÏŞÅÅĞò£¬ÔÙ°´¼«½ÇÅÅĞò£¬ÔÙ°´Ô¶½üÅÅĞò */
-bool PointCmpbyAnger(const point_t &a, const point_t &b){
-    if (a.y == 0 && b.y == 0 && a.x*b.x <= 0)return a.x>b.x;
-    if (a.y == 0 && a.x >= 0 && b.y != 0)return true;
-    if (b.y == 0 && b.x >= 0 && a.y != 0)return false;
-    if (b.y*a.y <= 0)return a.y>b.y;
-    point_t ORI(0,0);
-    return cross(ORI,a,b) > 0 || (cross(ORI,a,b) == 0 && a.y > b.y);
+/**< å‰ç§¯ oa * ob */
+inline int_t cross(point_t const &O, point_t const &A, point_t const &B) {
+    return (A.x - O.x) * (B.y - O.y) - (B.x - O.x) * (A.y - O.y);
 }
 
-struct line_t{
-    point_t a,b;
+/**< ç‚¹åˆ°ç‚¹çš„è·ç¦» */
+inline int_t Point2Point(point_t const &a, point_t const &b) {
+    return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+
+/**< çº¿æ®µçš„ä¸­ç‚¹ */
+inline point_t SegmentMid(point_t const &a, point_t const &b) {
+    return point_t((a.x + b.x) / 2.0, (a.y + b.y) / 2.0);
+}
+
+/**< å‘é‡çš„ç‚¹ç§¯ */
+double vector_dot(vector_t const &a, vector_t const &b) { return a.x * b.x + a.y * b.y; }
+
+/**< å‘é‡çš„é•¿åº¦ */
+double vector_length(vector_t const &a) { return sqrt(vector_dot(a, a)); }
+
+/**< å‘é‡çš„å¤¹è§’ */
+double vector_angle(vector_t const &a, vector_t const &b) {
+    double x = vector_dot(a, b) / vector_length(a) / vector_length(b);
+    if (x > 1.0) x = 1.0;
+    if (x < -1.0) x = -1.0;
+    return acos(x);
+}
+
+/**< å‘é‡çš„æ³•çº¿ è¾“å…¥è¦ä¿è¯ä¸æ˜¯é›¶å‘é‡ */
+vector_t vector_normal(vector_t const &a) {
+    double L = vector_length(a);
+    return vector_t(-a.y / L, a.x / L);
+}
+
+/**< å‘é‡æ—‹è½¬ å‘é‡aé€†æ—¶é’ˆæ—‹è½¬rad  */
+vector_t vector_rotate(vector_t const &a, double rad) {
+    return vector_t(a.x * cos(rad) - a.y * sin(rad), a.x * sin(rad) + a.y * cos(rad));
+}
+/**< ç‚¹æŒ‰è±¡é™è§’æ’åº */
+
+/**<  å…ˆæŒ‰è±¡é™æ’åºï¼Œå†æŒ‰æè§’æ’åºï¼Œå†æŒ‰è¿œè¿‘æ’åº */
+bool PointCmpbyAnger(const point_t &a, const point_t &b) {
+    if (a.y == 0 && b.y == 0 && a.x * b.x <= 0)return a.x > b.x;
+    if (a.y == 0 && a.x >= 0 && b.y != 0)return true;
+    if (b.y == 0 && b.x >= 0 && a.y != 0)return false;
+    if (b.y * a.y <= 0)return a.y > b.y;
+    point_t ORI(0, 0);
+    return cross(ORI, a, b) > 0 || (cross(ORI, a, b) == 0 && a.y > b.y);
+}
+
+struct line_t {
+    point_t a, b;
     double angle;
-    void cal(){angle = atan2(b.y-a.y, b.x-a.x);}
-    line_t  ( point_t aa = point_t(0,0),point_t bb = point_t(0,0) ):a(aa),b(bb) {angle = atan2(b.y-a.y, b.x-a.x);}
-    /**< lx°æµÄĞèÒªÕâ¸öÖØÔØ£¬lrjµÄÖ»Òª±Èanger¾ÍºÃ */
-    //¸ù¾İ·¨ÏòÁ¿µÄ¼«½ÇÅÅĞò0~360£¬¼«½ÇÏàÍ¬£¬Ô½¿¿½ü·¨ÏòÁ¿µÄÔ½Ğ¡
-    bool operator < ( line_t const&c ) const {
-        vector_t v1( b.x-a.x,b.y-a.y);
-        vector_t v2( c.b.x-c.a.x,c.b.y-c.a.y);
-        //·ÖÏóÏŞ
-        int al = quadrant(v1.x,v1.y);
-        int ar = quadrant(v2.x,v2.y);
-        if ( al != ar ) return al < ar;
 
-        //Ëã²æ»ı
+    void cal() { angle = atan2(b.y - a.y, b.x - a.x); }
+
+    line_t(point_t aa = point_t(0, 0), point_t bb = point_t(0, 0)) : a(aa), b(bb) {
+        angle = atan2(b.y - a.y, b.x - a.x);
+    }
+    /**< lxç‰ˆçš„éœ€è¦è¿™ä¸ªé‡è½½ï¼Œlrjçš„åªè¦æ¯”angerå°±å¥½ */
+    //æ ¹æ®æ³•å‘é‡çš„æè§’æ’åº0~360ï¼Œæè§’ç›¸åŒï¼Œè¶Šé è¿‘æ³•å‘é‡çš„è¶Šå°
+    bool operator<(line_t const &c) const {
+        vector_t v1(b.x - a.x, b.y - a.y);
+        vector_t v2(c.b.x - c.a.x, c.b.y - c.a.y);
+        //åˆ†è±¡é™
+        int al = quadrant(v1.x, v1.y);
+        int ar = quadrant(v2.x, v2.y);
+        if (al != ar) return al < ar;
+
+        //ç®—å‰ç§¯
         int_t chaji = v1.x * v2.y - v1.y * v2.x;
-        if ( dcmp(chaji) ) return chaji > 0;
+        if (dcmp(chaji)) return chaji > 0;
 
-        //¸ü¿¿½ü·¨ÏòÁ¿µÄ
-        return cross( a,b,c.b ) < 0;
+        //æ›´é è¿‘æ³•å‘é‡çš„
+        return cross(a, b, c.b) < 0;
     };
 //    bool operator < ( line_t const&c ) const {
 //        return angle < c.angle;
 //    }
-    /**< Æ½ÒÆ */
-    void translation( const double & x){
-        vector_t v = b-a;
+    /**< å¹³ç§» */
+    void translation(const double &x) {
+        vector_t v = b - a;
         vector_t nor = vector_normal(v);
-        a = a + nor*x;
+        a = a + nor * x;
         b = a + v;
     }
 };
@@ -104,53 +147,58 @@ struct line_t{
 struct circle_t {
     point_t p;
     int_t r;
-    circle_t( point_t pp= point_t(0,0),int_t rr=0): p(pp),r(rr) {};
+
+    explicit circle_t(point_t pp = point_t(0, 0), int_t rr = 0) : p(pp), r(rr) {};
 //    circle_t( int_t xx=0,int_t yy=0,int_t rr=0): x(xx),y(yy),r(rr) {};
 };
 
 
-/**< µãpµ½Ïß¶Îa,bµÄ¾àÀë */
-int_t Point2Segment( point_t const&a,point_t const&b,point_t const&p){
-    if( a == b ) return Point2Point(a,p);
-    vector_t v1  = b-a , v2 = p-a, v3 = p-b;
-    if ( dcmp( vector_dot(v1,v2) ) < 0 ) return vector_length(v2);
-    else if ( dcmp( vector_dot(v1,v3)) > 0 ) return vector_length(v3);
-    return fabs( cross( a, b, p ) ) / vector_length(v1);
-}
-/**< Ö±ÏßÆ½ĞĞ */
-bool LineParaLine( line_t const &l1,line_t const&l2 ){
-    return dcmp( cross( PO, l1.b-l1.a , l2.b-l2.a ) ) == 0 ;}
-/**< Ö±Ïß´¹Ö± */
-bool LineVertLine( line_t const &l1,line_t const&l2 ){
-    return dcmp(vector_angle( l1.a-l1.b,l2.a-l2.b ) - PI/2 ) == 0 ;}
-
-/**< µãµ½Ö±ÏßµÄ¾àÀë */
-int_t Point2Line( point_t const&p, line_t const&l){
-    vector_t v1 = l.b-l.a,v2 = p-l.a;
-    return fabs(cross(point_t(0,0),v1,v2)) / vector_length(v1);
+/**< ç‚¹påˆ°çº¿æ®µa,bçš„è·ç¦» */
+int_t Point2Segment(point_t const &a, point_t const &b, point_t const &p) {
+    if (a == b) return Point2Point(a, p);
+    vector_t v1 = b - a, v2 = p - a, v3 = p - b;
+    if (dcmp(vector_dot(v1, v2)) < 0) return vector_length(v2);
+    else if (dcmp(vector_dot(v1, v3)) > 0) return vector_length(v3);
+    return fabs(cross(a, b, p)) / vector_length(v1);
 }
 
-bool isConvexPolygon( point_t*p,int n,int &shunxu ){
+/**< ç›´çº¿å¹³è¡Œ */
+bool LineParaLine(line_t const &l1, line_t const &l2) {
+    return dcmp(cross(PO, l1.b - l1.a, l2.b - l2.a)) == 0;
+}
+
+/**< ç›´çº¿å‚ç›´ */
+bool LineVertLine(line_t const &l1, line_t const &l2) {
+    return dcmp(vector_angle(l1.a - l1.b, l2.a - l2.b) - PI / 2) == 0;
+}
+
+/**< ç‚¹åˆ°ç›´çº¿çš„è·ç¦» */
+int_t Point2Line(point_t const &p, line_t const &l) {
+    vector_t v1 = l.b - l.a, v2 = p - l.a;
+    return fabs(cross(point_t(0, 0), v1, v2)) / vector_length(v1);
+}
+
+bool isConvexPolygon(point_t *p, int n, int &shunxu) {
     p[n] = p[0];
-    p[n+1] = p[1];
-    int dir=0;
-    for(int i = 0 ;i < n;i++){
-        int temp=dcmp( cross(p[i],p[i+1],p[i+2]) ) ;
-        if( dir == 0 ) //µÚÒ»´Î²»Îª0£¬¸³Öµ
+    p[n + 1] = p[1];
+    int dir = 0;
+    for (int i = 0; i < n; i++) {
+        int temp = dcmp(cross(p[i], p[i + 1], p[i + 2]));
+        if (dir == 0) //ç¬¬ä¸€æ¬¡ä¸ä¸º0ï¼Œèµ‹å€¼
             dir = temp;
-        if ( temp != 0 )shunxu = temp;
-        if( dir * temp < 0 ) //ÈôºÍµÚÒ»´ÎµÄ·½Ïò²»Í¬£¬ËµÃ÷²»ÊÇÍ¹°ü
+        if (temp != 0)shunxu = temp;
+        if (dir * temp < 0) //è‹¥å’Œç¬¬ä¸€æ¬¡çš„æ–¹å‘ä¸åŒï¼Œè¯´æ˜ä¸æ˜¯å‡¸åŒ…
             return false;
     }
-    return true; //ÎªÍ¹°ü
+    return true; //ä¸ºå‡¸åŒ…
 }
 
-/**<  µãpoÊÇ·ñÔÚÏß¶ÎabÉÏ */
-bool PointOnSegment( segment_t const&seg, point_t const&po ){
-    return dcmp( cross(po,seg.s,seg.e) ) == 0 && dcmp( vector_dot(seg.s-po,seg.e-po) ) <= 0 ;
+/**<  ç‚¹poæ˜¯å¦åœ¨çº¿æ®µabä¸Š */
+bool PointOnSegment(segment_t const &seg, point_t const &po) {
+    return dcmp(cross(po, seg.s, seg.e)) == 0 && dcmp(vector_dot(seg.s - po, seg.e - po)) <= 0;
 }
-//ÓĞbug
-/**< µãpoÊÇ·ñÔÚ¼òµ¥¶à±ßĞÎ  ,µãpĞèÒªÏÈgraham ÅÅĞò */
+//æœ‰bug
+/**< ç‚¹poæ˜¯å¦åœ¨ç®€å•å¤šè¾¹å½¢  ,ç‚¹péœ€è¦å…ˆgraham æ’åº */
 //bool PointInSimple( point_t * p ,int n , point_t const&po ){
 //
 //    p[n] = p[0];
@@ -170,121 +218,124 @@ bool PointOnSegment( segment_t const&seg, point_t const&po ){
 //    }
 //    return flag;
 //}
-/**< µãpoÊÇ·ñÔÚ¼òµ¥¶à±ßĞÎÄÚ, ÄæĞò */
-bool PointInSimple( point_t * p ,int n , point_t const&po ){
+/**< ç‚¹poæ˜¯å¦åœ¨ç®€å•å¤šè¾¹å½¢å†…, é€†åº */
+bool PointInSimple(point_t *p, int n, point_t const &po) {
     int wn = 0;
     p[n] = p[0];
-    for (int i = 0;i < n;++i ){
-        if ( PointOnSegment( segment_t(p[i],p[i+1]),po)) return 1;
-        int k = dcmp( cross(p[i],p[i+1],po) );
-        int d1 = dcmp(p[i].y-po.y);
-        int d2 = dcmp(p[i+1].y-po.y);
-        if ( k > 0 && d1 <= 0 && d2 > 0 ) wn++;
-        if ( k < 0 && d2 <= 0 && d1 > 0 ) wn--;
+    for (int i = 0; i < n; ++i) {
+        if (PointOnSegment(segment_t(p[i], p[i + 1]), po)) return 1;
+        int k = dcmp(cross(p[i], p[i + 1], po));
+        int d1 = dcmp(p[i].y - po.y);
+        int d2 = dcmp(p[i + 1].y - po.y);
+        if (k > 0 && d1 <= 0 && d2 > 0) wn++;
+        if (k < 0 && d2 <= 0 && d1 > 0) wn--;
     }
-    if ( wn != 0 ) return 1;
-    return 0;
+    return (bool) wn;
 }
 
-/**< µãµ½¼òµ¥¶à±ßĞÎµÄ¾àÀë */
-/**< ¿ÉÒÔÓÅ»¯,ÒòÎªÊÇ¸öµ¥·åº¯Êı n/2 ¿ÉÒÔ½â¾ö */
-double Point2Simple( point_t * p ,int n , point_t const&po ){
+/**< ç‚¹åˆ°ç®€å•å¤šè¾¹å½¢çš„è·ç¦» */
+/**< å¯ä»¥ä¼˜åŒ–,å› ä¸ºæ˜¯ä¸ªå•å³°å‡½æ•° n/2 å¯ä»¥è§£å†³ */
+double Point2Simple(point_t *p, int n, point_t const &po) {
 //    if ( PointInSimple( p,n,po ) ) return 0;
-    int_t ans = Point2Segment( p[0],p[1] ,po);
+    int_t ans = Point2Segment(p[0], p[1], po);
     p[n] = p[0];
-    for (int i = 1;i < n ;++i)
-        ans = min( ans, Point2Segment( p[i] , p[i+1] ,po) );
+    for (int i = 1; i < n; ++i)
+        ans = min(ans, Point2Segment(p[i], p[i + 1], po));
     return ans;
 }
-inline double Segment2Segment(segment_t const&u,segment_t const&v){
-    return min(min(Point2Segment(u.s,u.e,v.s),Point2Segment(u.s,u.e,v.e)),
-               min(Point2Segment(v.s,v.e,u.s),Point2Segment(v.s,v.e,u.e)));
+
+inline double Segment2Segment(segment_t const &u, segment_t const &v) {
+    return min(min(Point2Segment(u.s, u.e, v.s), Point2Segment(u.s, u.e, v.e)),
+               min(Point2Segment(v.s, v.e, u.s), Point2Segment(v.s, v.e, u.e)));
 
 }
-/**< Ïß¶ÎÏà½»  ÑÏ¸ñÏà½» , Ö»ÒªÓĞ½»µã¾ÍËã */
-inline bool SegmentOnSegment(segment_t const&u,segment_t const&v){
-    return max(u.s.x,u.e.x) >= min(v.s.x,v.e.x)
-        && max(v.s.x,v.e.x) >= min(u.s.x,u.e.x)
-        && max(u.s.y,u.e.y) >= min(v.s.y,v.e.y)
-        && max(v.s.y,v.e.y) >= min(u.s.y,u.e.y)
-        /**< ¿¼ÂÇ½»µãÊÇ¶Ëµã */
-        && cross(v.s,u.e,v.e) * cross(v.s,v.e,u.s) >= 0
-        && cross(u.s,v.e,u.e) * cross(u.s,u.e,v.s) >= 0;
+
+/**< çº¿æ®µç›¸äº¤  ä¸¥æ ¼ç›¸äº¤ , åªè¦æœ‰äº¤ç‚¹å°±ç®— */
+inline bool SegmentOnSegment(segment_t const &u, segment_t const &v) {
+    return max(u.s.x, u.e.x) >= min(v.s.x, v.e.x)
+           && max(v.s.x, v.e.x) >= min(u.s.x, u.e.x)
+           && max(u.s.y, u.e.y) >= min(v.s.y, v.e.y)
+           && max(v.s.y, v.e.y) >= min(u.s.y, u.e.y)
+           /**< è€ƒè™‘äº¤ç‚¹æ˜¯ç«¯ç‚¹ */
+           && cross(v.s, u.e, v.e) * cross(v.s, v.e, u.s) >= 0
+           && cross(u.s, v.e, u.e) * cross(u.s, u.e, v.s) >= 0;
 }
-/**< Ïß¶ÎÏà½», ²»ÑÏ¸ñ, ³ı·Ç½»²æ,»òÕß¸²¸Ç,·ñÔò²»ËãÏà½»  */
-bool SegmentOnSegmentNoStrict(segment_t s1,segment_t s2){
-    segment_t &u = s1,&v = s2;
-    /**< ÏÈÅĞ¶ÏÊÇ·ñ½»²æ  */
-    if( max(u.s.x,u.e.x) >= min(v.s.x,v.e.x)
-        && max(v.s.x,v.e.x) >= min(u.s.x,u.e.x)
-        && max(u.s.y,u.e.y) >= min(v.s.y,v.e.y)
-        && max(v.s.y,v.e.y) >= min(u.s.y,u.e.y)
-        /**< ¿¼ÂÇ½»µãÊÇ¶Ëµã */
-        && cross(v.s,u.e,v.e) * cross(v.s,v.e,u.s) > 0
-        && cross(u.s,v.e,u.e) * cross(u.s,u.e,v.s) > 0) return true ;
-    if ( s1.e < s1.s )swap( s1.s,s1.e );
-    if ( s2.e < s2.s )swap( s2.s,s2.e );
-    /**< ÅĞ¶ÏÊÇ·ñ¸²¸Ç  */
-    if ( dcmp( vector_angle(s1.s-s1.e , s2.s-s2.e) ) == 0
-        && dcmp( Segment2Segment(s1,s2) ) == 0 ){
-        if ( s2.e == s1.s || s1.s == s2.e )return false;
+
+/**< çº¿æ®µç›¸äº¤, ä¸ä¸¥æ ¼, é™¤éäº¤å‰,æˆ–è€…è¦†ç›–,å¦åˆ™ä¸ç®—ç›¸äº¤  */
+bool SegmentOnSegmentNoStrict(segment_t s1, segment_t s2) {
+    segment_t &u = s1, &v = s2;
+    /**< å…ˆåˆ¤æ–­æ˜¯å¦äº¤å‰  */
+    if (max(u.s.x, u.e.x) >= min(v.s.x, v.e.x)
+        && max(v.s.x, v.e.x) >= min(u.s.x, u.e.x)
+        && max(u.s.y, u.e.y) >= min(v.s.y, v.e.y)
+        && max(v.s.y, v.e.y) >= min(u.s.y, u.e.y)
+        /**< è€ƒè™‘äº¤ç‚¹æ˜¯ç«¯ç‚¹ */
+        && cross(v.s, u.e, v.e) * cross(v.s, v.e, u.s) > 0
+        && cross(u.s, v.e, u.e) * cross(u.s, u.e, v.s) > 0)
         return true;
+    if (s1.e < s1.s)swap(s1.s, s1.e);
+    if (s2.e < s2.s)swap(s2.s, s2.e);
+    /**< åˆ¤æ–­æ˜¯å¦è¦†ç›–  */
+    if (dcmp(vector_angle(s1.s - s1.e, s2.s - s2.e)) == 0
+        && dcmp(Segment2Segment(s1, s2)) == 0) {
+        return !(s2.e == s1.s || s1.s == s2.e);
     }
     return false;
 }
 
 
-/**< Ö±ÏßÊÇ·ñÓëÏß¶ÎÏà½» */
-/**< ×¢ÒâÏòÁ¿Òª´óÓÚ0 */
-inline bool LineOnSegment( line_t const&l,segment_t const &s ){
-    return cross(l.a,l.b,s.s)*cross(l.a,s.e,l.b) >= 0;
+/**< ç›´çº¿æ˜¯å¦ä¸çº¿æ®µç›¸äº¤ */
+/**< æ³¨æ„å‘é‡è¦å¤§äº0 */
+inline bool LineOnSegment(line_t const &l, segment_t const &s) {
+    return cross(l.a, l.b, s.s) * cross(l.a, s.e, l.b) >= 0;
 }
-/**< Ö±ÏßÓëÖ±ÏßµÄ½»µã */
-point_t lineCrossline( line_t const&l1,line_t const&l2)
-{
-    point_t  p0(0,0);
+
+/**< ç›´çº¿ä¸ç›´çº¿çš„äº¤ç‚¹ */
+point_t lineCrossline(line_t const &l1, line_t const &l2) {
+    point_t p0(0, 0);
     vector_t v = l1.b - l1.a;
     vector_t w = l2.b - l2.a;
-    double t = cross( l2.a , l2.b , l1.a )/cross( p0,v,w );
+    double t = cross(l2.a, l2.b, l1.a) / cross(p0, v, w);
     return l1.a + v * t;
 }
 
-/**< Èı½ÇĞÎµÄÃæ»ı  ÓĞÏòÃæ»ı */
-double TriangleArea( point_t const&a,point_t const&b, point_t const&c){return 0.5 * cross(a,b,c);}
+/**< ä¸‰è§’å½¢çš„é¢ç§¯  æœ‰å‘é¢ç§¯ */
+double TriangleArea(point_t const &a, point_t const &b, point_t const &c) { return 0.5 * cross(a, b, c); }
 
-/**< ¼ÆËã¶à±ßĞÎÃæ»ı ,µãpĞèÒªÏÈgraham ÅÅĞò*/
-double  PolygonArea(point_t p[], int n)
-{
+/**< è®¡ç®—å¤šè¾¹å½¢é¢ç§¯ ,ç‚¹péœ€è¦å…ˆgraham æ’åº*/
+double PolygonArea(point_t p[], int n) {
     double area = 0;
-    for (int i = 0 ;i < n-1;++i )
-        area += cross(p[0] , p[i] , p[i+1] );
+    for (int i = 0; i < n - 1; ++i)
+        area += cross(p[0], p[i], p[i + 1]);
     return area / 2.0;
 }
-/**< ¶à±ßĞÎµÄÖÜ³¤ */
-int_t PolygonSideLength(point_t p[], int n){
+
+/**< å¤šè¾¹å½¢çš„å‘¨é•¿ */
+int_t PolygonSideLength(point_t p[], int n) {
     double length = 0;
-    for (int i = 0 ;i < n-1;++i ) length += Point2Point(p[i],p[i+1]);
-    return length + Point2Point(p[n-1],p[0]);
+    for (int i = 0; i < n - 1; ++i) length += Point2Point(p[i], p[i + 1]);
+    return length + Point2Point(p[n - 1], p[0]);
 }
-/**<  Ô²ÓëÖ±ÏßµÄÇĞÏß ,·µ»ØÏòÁ¿µÄÊıÁ¿  */
-int LineTangentCircle(point_t const&p , circle_t const&c, vector_t *v){
+
+/**<  åœ†ä¸ç›´çº¿çš„åˆ‡çº¿ ,è¿”å›å‘é‡çš„æ•°é‡  */
+int LineTangentCircle(point_t const &p, circle_t const &c, vector_t *v) {
     vector_t u = c.p - p;
     double dist = vector_length(u);
-    if ( dist < c.r )return 0;
-    else if ( dcmp(dist-c.r) == 0 ){
-        v[0] = vector_rotate(u,PI/2);
+    if (dist < c.r)return 0;
+    else if (dcmp(dist - c.r) == 0) {
+        v[0] = vector_rotate(u, PI / 2);
         return 1;
-    }else {
-        double ang = asin(c.r/dist);
-        v[0] = vector_rotate(u,-ang);
-        v[1] = vector_rotate(u,+ang);
+    } else {
+        double ang = asin(c.r / dist);
+        v[0] = vector_rotate(u, -ang);
+        v[1] = vector_rotate(u, +ang);
         return 2;
     }
 }
 
-/**< CircleIntersectArea  Á½¸öÔ²µÄÃæ»ı½» */
-double CIA(circle_t const&a, circle_t const&b) {
-    double d = Point2Point( a.p,b.p );
+/**< CircleIntersectArea  ä¸¤ä¸ªåœ†çš„é¢ç§¯äº¤ */
+double CIA(circle_t const &a, circle_t const &b) {
+    double d = Point2Point(a.p, b.p);
     if (d >= a.r + b.r)
         return 0;
     if (d <= fabs(a.r - b.r)) {
@@ -297,57 +348,58 @@ double CIA(circle_t const&a, circle_t const&b) {
 }
 
 
+/**< Aå¦‚æœæ¯”Bæ›´é ä¸‹æ›´é å·¦è¿”å›çœŸ */
+inline bool isLowLeft(point_t const &A, point_t const &B) { return A.y < B.y || (A.y == B.y && A.x < B.x); }
 
-/**< AÈç¹û±ÈB¸ü¿¿ÏÂ¸ü¿¿×ó·µ»ØÕæ */
-inline bool isLowLeft(point_t const&A,point_t const&B){return A.y < B.y || ( A.y == B.y && A.x < B.x );}
-/**< °´ÕÕ¶ÔÓÚpOµÄ¼«½ÇÅÅĞò£¬¼«½ÇÏàµÈµÄ¾àÀëÔ¶µÄÅÅÔÚÇ°Ãæ£¬ÒòÎªºóÃæÒª×öÒ»¸öunique */
-point_t* pO;
-inline bool comp4Graham(point_t const&A,point_t const&B){
-    int_t t = cross(*pO,A,B);
-    if ( t ) return t > 0LL;
+/**< æŒ‰ç…§å¯¹äºpOçš„æè§’æ’åºï¼Œæè§’ç›¸ç­‰çš„è·ç¦»è¿œçš„æ’åœ¨å‰é¢ï¼Œå› ä¸ºåé¢è¦åšä¸€ä¸ªunique */
+point_t *pO;
+
+inline bool comp4Graham(point_t const &A, point_t const &B) {
+    int_t t = cross(*pO, A, B);
+    if (t) return t > 0LL;
 
     int_t a1 = A.x > pO->x ? A.x - pO->x : pO->x - A.x;
     int_t a2 = B.x > pO->x ? B.x - pO->x : pO->x - B.x;
-    if ( a1 != a2 ) return a1 > a2;
-//    if ( a1 != a2 ) return a1 < a2; //°ÑÕâ¸ö±ä³É½üµÄ·ÅÇ°Ãæ ( ²»ÑÏ¸ñÍ¹°ü )
+    if (a1 != a2) return a1 > a2;
+//    if ( a1 != a2 ) return a1 < a2; //æŠŠè¿™ä¸ªå˜æˆè¿‘çš„æ”¾å‰é¢ ( ä¸ä¸¥æ ¼å‡¸åŒ… )
     a1 = A.y > pO->y ? A.y - pO->y : pO->y - A.y;
     a2 = B.y > pO->y ? B.y - pO->y : pO->y - B.y;
     return a1 > a2;
 }
 
 
-/**< Ïà¶ÔÓÚpOÊÇ·ñ¼«½ÇÏàµÈ */
-inline bool isEqPolar(point_t const&A,point_t const&B){return 0LL == cross(*pO,A,B);}
+/**< ç›¸å¯¹äºpOæ˜¯å¦æè§’ç›¸ç­‰ */
+inline bool isEqPolar(point_t const &A, point_t const &B) { return 0LL == cross(*pO, A, B); }
 /** \brief
- * Ä¬ÈÏÊÇÑÏ¸ñÍ¹°ü¶à±ßĞÎµÄÅÅĞò
- * ÑÏ¸ñÍ¹°üÊÇÔÚ¼«½ÇÅÅĞòµÄÊ±ºòÌáÇ°×öÁË´¦Àí£¬ËùÒÔÎÒÃÇÖ»Òª°Ñ´¦ÀíÈ¡·´¼´¿É£¬
- * ´úÂëÉÏÖ»Òª°Ñ¼«½ÇÏàµÈµÄÊ±ºò¸Ä³É½üµÄ·ÅÇ°Ãæ£¬È¥µôuniqueº¯Êı <= ¸Ä³É < ¡£
+ * é»˜è®¤æ˜¯ä¸¥æ ¼å‡¸åŒ…å¤šè¾¹å½¢çš„æ’åº
+ * ä¸¥æ ¼å‡¸åŒ…æ˜¯åœ¨æè§’æ’åºçš„æ—¶å€™æå‰åšäº†å¤„ç†ï¼Œæ‰€ä»¥æˆ‘ä»¬åªè¦æŠŠå¤„ç†å–åå³å¯ï¼Œ
+ * ä»£ç ä¸Šåªè¦æŠŠæè§’ç›¸ç­‰çš„æ—¶å€™æ”¹æˆè¿‘çš„æ”¾å‰é¢ï¼Œå»æ‰uniqueå‡½æ•° <= æ”¹æˆ < ã€‚
  */
-/**<  GrahamÇóÍ¹°ü£¬½á¹ûµ±ÖĞÃ»ÓĞ¹²Ïßµã£¬Æğµã×ÜÊÇ×îÏÂ×î×óµã */
-int Graham(point_t P[],int n){
-    if ( 1 == n ) return 1;
+/**<  Grahamæ±‚å‡¸åŒ…ï¼Œç»“æœå½“ä¸­æ²¡æœ‰å…±çº¿ç‚¹ï¼Œèµ·ç‚¹æ€»æ˜¯æœ€ä¸‹æœ€å·¦ç‚¹ */
+int Graham(point_t P[], int n) {
+    if (1 == n) return 1;
 
-    //Ñ°ÕÒ×îÏÂ×î×óµã
-    point_t *p = min_element(P,P+n,isLowLeft);
+    //å¯»æ‰¾æœ€ä¸‹æœ€å·¦ç‚¹
+    point_t *p = min_element(P, P + n, isLowLeft);
 
-    //½»»»
-    swap(*p,P[0]);
+    //äº¤æ¢
+    swap(*p, P[0]);
 
-    if ( 2 == n ) return 2;
+    if (2 == n) return 2;
 
-    //°´¼«½ÇÅÅĞò£¬¼«½ÇÏàµÈ£¬¾àÀë½üµÄÅÅÔÚÇ°Ãæ
+    //æŒ‰æè§’æ’åºï¼Œæè§’ç›¸ç­‰ï¼Œè·ç¦»è¿‘çš„æ’åœ¨å‰é¢
     pO = P;
-    sort(P+1,P+n,comp4Graham);
+    sort(P + 1, P + n, comp4Graham);
 
-    //½«Ïà¶ÔÓÚpOµÄ¹²Ïßµã¾ùÌŞ³ı£¬Ö»±£Áô×îºóÒ»¸ö ( ÑÏ¸ñÍ¹°ü )
-    p = unique(P+1,P+n,isEqPolar);
-    n = p - P;
+    //å°†ç›¸å¯¹äºpOçš„å…±çº¿ç‚¹å‡å‰”é™¤ï¼Œåªä¿ç•™æœ€åä¸€ä¸ª ( ä¸¥æ ¼å‡¸åŒ… )
+    p = unique(P + 1, P + n, isEqPolar);
+    n = (int) (p - P);
 
-    //ÕæÕıµÄGrahamÑ­»·
+    //çœŸæ­£çš„Grahamå¾ªç¯
     int top = 2;
-    for(int i=2;i<n;++i){
-        /**< ²»ÑÏ¸ñ Õâ¸ö<= Òª¸Ä³É <  */
-        while( top > 1 && cross(P[top-2],P[top-1],P[i]) <= 0LL )
+    for (int i = 2; i < n; ++i) {
+        /**< ä¸ä¸¥æ ¼ è¿™ä¸ª<= è¦æ”¹æˆ <  */
+        while (top > 1 && cross(P[top - 2], P[top - 1], P[i]) <= 0LL)
             --top;
         P[top++] = P[i];
     }
@@ -356,43 +408,43 @@ int Graham(point_t P[],int n){
 
 
 
-/**< ÓĞÏòÃæ»ı½»,ÓĞÕı¸º */
+/**< æœ‰å‘é¢ç§¯äº¤,æœ‰æ­£è´Ÿ */
 /**< ConvexPolygonIntersectArea */
-int_t CPIA(point_t a[], point_t b[], int na, int nb){
+int_t CPIA(point_t a[], point_t b[], int na, int nb) {
     point_t p[20], tmp[20];
     int tn, sflag, eflag;
     a[na] = a[0], b[nb] = b[0];
-    memcpy(p,b,sizeof(point_t)*(nb + 1));
-    for(int i = 0; i < na && nb > 2; i++){
-        sflag = dcmp(cross(a[i],a[i + 1], p[0]));
-        for(int j = tn = 0; j < nb; j++, sflag = eflag){
-            if(sflag>=0) tmp[tn++] = p[j];
-            eflag = dcmp(cross(a[i],a[i + 1], p[j + 1]));
-            if((sflag ^ eflag) == -2) /**<  Çó½»µã */
-                tmp[tn++] = lineCrossline( line_t( a[i], a[i + 1]),line_t(p[j], p[j + 1]) );
+    memcpy(p, b, sizeof(point_t) * (nb + 1));
+    for (int i = 0; i < na && nb > 2; i++) {
+        sflag = dcmp(cross(a[i], a[i + 1], p[0]));
+        for (int j = tn = 0; j < nb; j++, sflag = eflag) {
+            if (sflag >= 0) tmp[tn++] = p[j];
+            eflag = dcmp(cross(a[i], a[i + 1], p[j + 1]));
+            if (-2 == (sflag ^ eflag)) /**<  æ±‚äº¤ç‚¹ */
+                tmp[tn++] = lineCrossline(line_t(a[i], a[i + 1]), line_t(p[j], p[j + 1]));
         }
         memcpy(p, tmp, sizeof(point_t) * tn);
         nb = tn, p[nb] = p[0];
     }
-    if(nb < 3) return 0.0;
+    if (nb < 3) return 0.0;
     return PolygonArea(p, nb);
 }
 
-/**< ÓĞÏòÃæ»ı½»,ÓĞÕı¸º */
-/**< SimplePolygonIntersectArea µ÷ÓÃ´Ëº¯Êı */
-int_t SPIA(point_t a[], point_t b[], int na, int nb){
+/**< æœ‰å‘é¢ç§¯äº¤,æœ‰æ­£è´Ÿ */
+/**< SimplePolygonIntersectArea è°ƒç”¨æ­¤å‡½æ•° */
+int_t SPIA(point_t a[], point_t b[], int na, int nb) {
     int i, j;
     point_t t1[4], t2[4];
     int_t res = 0, num1, num2;
     a[na] = t1[0] = a[0], b[nb] = t2[0] = b[0];
-    for(i = 2; i < na; i++) {
-        t1[1] = a[i-1], t1[2] = a[i];
-        num1 = dcmp(cross(t1[0],t1[1], t1[2]));
-        if(num1 < 0) swap(t1[1], t1[2]);
-        for(j = 2; j < nb; j++){
+    for (i = 2; i < na; i++) {
+        t1[1] = a[i - 1], t1[2] = a[i];
+        num1 = dcmp(cross(t1[0], t1[1], t1[2]));
+        if (num1 < 0) swap(t1[1], t1[2]);
+        for (j = 2; j < nb; j++) {
             t2[1] = b[j - 1], t2[2] = b[j];
-            num2 = dcmp(cross(t2[0],t2[1], t2[2]));
-            if(num2 < 0) swap(t2[1], t2[2]);
+            num2 = dcmp(cross(t2[0], t2[1], t2[2]));
+            if (num2 < 0) swap(t2[1], t2[2]);
             res += CPIA(t1, t2, 3, 3) * num1 * num2;
         }
     }
@@ -400,89 +452,89 @@ int_t SPIA(point_t a[], point_t b[], int na, int nb){
 }
 
 
-/**< Ğı×ª¿¨¿Ç·¨ÇóÍ¹°üµÄ×î³¤µã¶Ô ¼´Í¹°üµÄÖ±¾¶*/
-double Rotating_calipers( point_t *p ,int n ){
+/**< æ—‹è½¬å¡å£³æ³•æ±‚å‡¸åŒ…çš„æœ€é•¿ç‚¹å¯¹ å³å‡¸åŒ…çš„ç›´å¾„*/
+double Rotating_calipers(point_t *p, int n) {
     int q = 1;
     int_t ans = 0;
     p[n] = p[0];
-    point_t p1,p2;
-    for (int i = 0 ;i < n;++i ){
-        while ( fabs(TriangleArea(p[i],p[i+1],p[q+1])) > fabs(TriangleArea(p[i],p[i+1],p[q] )) )
-            q = (q+1) % n;
-        ans = max( ans ,max( Point2Point(p[i],p[q]), Point2Point(p[i+1],p[q+1]) ) );
+    for (int i = 0; i < n; ++i) {
+        while (fabs(TriangleArea(p[i], p[i + 1], p[q + 1])) > fabs(TriangleArea(p[i], p[i + 1], p[q])))
+            q = (q + 1) % n;
+        ans = max(ans, max(Point2Point(p[i], p[q]), Point2Point(p[i + 1], p[q + 1])));
     }
     return ans;
 }
 
-/**< Ğı×ª¿¨¿Ç·¨ÇóÍ¹°üÖĞ×î´óÈı½ÇĞÎ ×¢ÒâÍøÉÏºÜ¶à¶¼ÊÇ´íµÄ,Õâ¸öËäÈ»ÂıÁËµã,µ«ÊÇ¸ú±©Á¦µÃµ½µÄ´ğ°¸ÆğÂëÊÇÒ»ÑùµÄ  */
-double  max_TriangleArea( point_t *p,int n ){
+/**< æ—‹è½¬å¡å£³æ³•æ±‚å‡¸åŒ…ä¸­æœ€å¤§ä¸‰è§’å½¢ æ³¨æ„ç½‘ä¸Šå¾ˆå¤šéƒ½æ˜¯é”™çš„,è¿™ä¸ªè™½ç„¶æ…¢äº†ç‚¹,ä½†æ˜¯è·Ÿæš´åŠ›å¾—åˆ°çš„ç­”æ¡ˆèµ·ç æ˜¯ä¸€æ ·çš„  */
+double max_TriangleArea(point_t *p, int n) {
     double ans = 0;
     p[n] = p[0];
-    for (int i = 0; i < n; i ++) {
+    for (int i = 0; i < n; i++) {
         int k = 2;
-        for (int j = i + 1; j <= n; j ++) {
-            while(TriangleArea(p[i], p[j], p[k]) < TriangleArea(p[i], p[j], p[(k + 1) % n]))
+        for (int j = i + 1; j <= n; j++) {
+            while (TriangleArea(p[i], p[j], p[k]) < TriangleArea(p[i], p[j], p[(k + 1) % n]))
                 k = (k + 1) % n;
-            ans = max(ans,TriangleArea(p[i], p[j], p[k]));
+            ans = max(ans, TriangleArea(p[i], p[j], p[k]));
         }
     }
     return ans;
 }
 
-/**< Á½¸öÍ¹°üµÄ×î½ü¾àÀë */
-void _getTOP_DOWN( point_t *p1 ,int n1,int &l, point_t *p2,int n2,int &r ){
+/**< ä¸¤ä¸ªå‡¸åŒ…çš„æœ€è¿‘è·ç¦» */
+void _getTOP_DOWN(point_t *p1, int n1, int &l, point_t *p2, int n2, int &r) {
     l = r = 0;
-    for( int i=0;i<n1;i++ )
-        if((dcmp(p1[i].y-p1[l].y))<0) l = i;
-    for( int i=0;i<n2;i++ )
-        if((dcmp(p2[i].y-p2[r].y))>0) r = i;
+    for (int i = 0; i < n1; i++)
+        if ((dcmp(p1[i].y - p1[l].y)) < 0) l = i;
+    for (int i = 0; i < n2; i++)
+        if ((dcmp(p2[i].y - p2[r].y)) > 0) r = i;
 }
-double _docp( point_t *p1 ,int n1,int l, point_t *p2,int n2,int r ){
+
+double _docp(point_t *p1, int n1, int l, point_t *p2, int n2, int r) {
     int_t ans = 1e90;
     int tmp;
     p1[n1] = p1[0];
     p2[n2] = p2[0];
 //    auto f = [](const double&x)->int{ return dcmp(x); };
-    for ( int i = 0;i < n1;++i ){
-        if ( dcmp(ans) == 0 ) return 0;
+    for (int i = 0; i < n1; ++i) {
+        if (dcmp(ans) == 0) return 0;
 //        while ( tmp = dcmp( fabs( TriangleArea(p1[l],p1[l+1],p2[r+1]) ) - fabs( TriangleArea(p1[l],p1[l+1],p2[r]) ) ) < 0 )
 //            r = (r+1) % n2;
 
-        while ( 1 ){
-            double s1 = TriangleArea(p1[l],p1[l+1],p2[r+1]);
-            double s2 = TriangleArea(p1[l],p1[l+1],p2[r]) ;
+        while (true) {
+            double s1 = TriangleArea(p1[l], p1[l + 1], p2[r + 1]);
+            double s2 = TriangleArea(p1[l], p1[l + 1], p2[r]);
 //            if ( f(s1) * f(s2) < 0 ) ans = 0;
-            if ( SegmentOnSegment( segment_t(p1[l],p1[l+1]),segment_t(p2[r],p2[r+1]) ) )  ans = 0;
+            if (SegmentOnSegment(segment_t(p1[l], p1[l + 1]), segment_t(p2[r], p2[r + 1]))) ans = 0;
             s1 = fabs(s1);
             s2 = fabs(s2);
-            tmp = dcmp( s1-s2);
-            if ( tmp < 0 ) r = (r+1)%n2;
+            tmp = dcmp(s1 - s2);
+            if (tmp < 0) r = (r + 1) % n2;
             else break;
         }
 
-        if ( tmp == 0 )
-            ans = min( ans ,Segment2Segment( segment_t( p1[l],p1[l+1] ) , segment_t(p2[r],p2[r+1]) ) );
+        if (tmp == 0)
+            ans = min(ans, Segment2Segment(segment_t(p1[l], p1[l + 1]), segment_t(p2[r], p2[r + 1])));
         else
-            ans = min( ans ,Point2Segment( p1[l],p1[l+1],p2[r]));
-        l = (l+1)%n1;
+            ans = min(ans, Point2Segment(p1[l], p1[l + 1], p2[r]));
+        l = (l + 1) % n1;
     }
     return ans;
 }
 
 /**< distence of  Convex polygon*/
-/**< Ğı×ª¿¨¿Ç·¨ ¼ÆËã Á½¸öÍ¹°üµÄ×î½ü¾àÀë ,ÕâÀïÅĞ¶ÏÁËËÄ´Î, ×¢Òâ°üº¬µÄÇé¿ö,´Ë´¦°üº¬²»Ëã0  */
-double DOCP( point_t *p1 ,int n1, point_t *p2,int n2 ){
-    int l,r;
-    _getTOP_DOWN( p1,n1,l,p2,n2,r );
+/**< æ—‹è½¬å¡å£³æ³• è®¡ç®— ä¸¤ä¸ªå‡¸åŒ…çš„æœ€è¿‘è·ç¦» ,è¿™é‡Œåˆ¤æ–­äº†å››æ¬¡, æ³¨æ„åŒ…å«çš„æƒ…å†µ,æ­¤å¤„åŒ…å«ä¸ç®—0  */
+double DOCP(point_t *p1, int n1, point_t *p2, int n2) {
+    int l, r;
+    _getTOP_DOWN(p1, n1, l, p2, n2, r);
     double ans = INT_MAX;
-    ans = min( ans , _docp(p1,n1,l,p2,n2,r));
+    ans = min(ans, _docp(p1, n1, l, p2, n2, r));
 //    deBug(ans);
-    ans = min(ans , _docp(p2,n2,r,p1,n1,l)) ;
+    ans = min(ans, _docp(p2, n2, r, p1, n1, l));
 //    deBug(ans);
-    _getTOP_DOWN( p2,n2,r,p1,n1,l );
-    ans = min( ans , _docp(p2,n2,r,p1,n1,l)) ;
+    _getTOP_DOWN(p2, n2, r, p1, n1, l);
+    ans = min(ans, _docp(p2, n2, r, p1, n1, l));
 //    deBug(ans);
-    ans = min( ans , _docp(p1,n1,l,p2,n2,r));
+    ans = min(ans, _docp(p1, n1, l, p2, n2, r));
 //    deBug(ans);
     return ans;
 }
@@ -491,123 +543,124 @@ double DOCP( point_t *p1 ,int n1, point_t *p2,int n2 ){
 const int _SIZE = 8000;
 point_t _p[_SIZE];
 line_t _q[_SIZE];
-inline bool OnLeft(line_t const&L,point_t const&p ){ return cross( L.a, L.b, p ) > 0; };
-/** °ëÆ½Ãæ½»£¨ÁõÈê¼Ñ°æ£©
- * ÑÏ¸ñ°ëÆ½Ãæ½»£¬½»ÎªÒ»µã²»Ëã
- * ×¢ÒâlineÒª³õÊ¼»¯angle, _sizeµÄ´óĞ¡*4
- * lµÄ·½Ïò Ö±Ïßa->b µÄ×ó±ßÎª°ëÆ½ÃæÇøÓò Êä³öÄæĞò,grahamĞò
- * ÊäÈëÒªÄæĞò£¨ÅĞ¸öÃæ»ı£©»òÕß×öÁ½´Î°ëÆ½Ãæ½»È¡×î´ó\
- * Èç¹ûÓĞºËÔò·µ»Ø3£¬Ã»ÓĞ·µ»Ø0
+
+inline bool OnLeft(line_t const &L, point_t const &p) { return cross(L.a, L.b, p) > 0; };
+
+/** åŠå¹³é¢äº¤ï¼ˆåˆ˜æ±ä½³ç‰ˆï¼‰
+ * ä¸¥æ ¼åŠå¹³é¢äº¤ï¼Œäº¤ä¸ºä¸€ç‚¹ä¸ç®—
+ * æ³¨æ„lineè¦åˆå§‹åŒ–angle, _sizeçš„å¤§å°*4
+ * lçš„æ–¹å‘ ç›´çº¿a->b çš„å·¦è¾¹ä¸ºåŠå¹³é¢åŒºåŸŸ è¾“å‡ºé€†åº,grahamåº
+ * è¾“å…¥è¦é€†åºï¼ˆåˆ¤ä¸ªé¢ç§¯ï¼‰æˆ–è€…åšä¸¤æ¬¡åŠå¹³é¢äº¤å–æœ€å¤§\
+ * å¦‚æœæœ‰æ ¸åˆ™è¿”å›3ï¼Œæ²¡æœ‰è¿”å›0
  */
-int HalfplaneIntersection( line_t const l[] , int n ,point_t *poly ){
+int HalfplaneIntersection(line_t const l[], int n, point_t *poly) {
 //    sort( l,l+n );
 
-    int first = 0,last = 0;
+    int first = 0, last = 0;
     _q[first] = l[0];
-    for ( int i = 1;i < n;++i ){
-        while ( first < last && !OnLeft(l[i],_p[last-1])) last--;
-        while ( first < last && !OnLeft(l[i],_p[first] )) first++;
+    for (int i = 1; i < n; ++i) {
+        while (first < last && !OnLeft(l[i], _p[last - 1])) last--;
+        while (first < last && !OnLeft(l[i], _p[first])) first++;
         _q[++last] = l[i];
-        if ( fabs(cross( point_t(0,0) ,(_q[last].b-_q[last].a) ,(_q[last-1].b-_q[last-1].a) )) < eps ){
+        if (fabs(cross(point_t(0, 0), (_q[last].b - _q[last].a), (_q[last - 1].b - _q[last - 1].a))) < eps) {
             last--;
-            if ( OnLeft( _q[last],l[i].a ) ) _q[last] = l[i];
+            if (OnLeft(_q[last], l[i].a)) _q[last] = l[i];
         }
-        if ( first < last ) _p[last-1] = lineCrossline( _q[last-1] , _q[last] );
+        if (first < last) _p[last - 1] = lineCrossline(_q[last - 1], _q[last]);
     }
-    while ( first < last && !OnLeft( _q[first] , _p[last-1]) ) last--;
+    while (first < last && !OnLeft(_q[first], _p[last - 1])) last--;
 
-    if ( last-first <= 1 ) return 0;
-    _p[last] = lineCrossline(_q[last],_q[first]);
+    if (last - first <= 1) return 0;
+    _p[last] = lineCrossline(_q[last], _q[first]);
 
     int m = 0;
-    for (int i = first ;i <= last ;++i ) poly[m++] = _p[i];
+    for (int i = first; i <= last; ++i) poly[m++] = _p[i];
     return m;
 }
-/** °ëÆ½Ãæ½» S&I£¨luoxun°æ£©
- * ÊäÈë±ØĞë±£Ö¤ÄæĞò
- * Èç¹û½»ÓÚÒ»µã£¬·µ»ØÈıÌõ
- * ÔÚÊäÈëµÄ±ßÉÏ½øĞĞĞŞ¸Ä
- * ÅĞ¶Ï´æÔÚµÄÊ±ºò n > 2
+/** åŠå¹³é¢äº¤ S&Iï¼ˆluoxunç‰ˆï¼‰
+ * è¾“å…¥å¿…é¡»ä¿è¯é€†åº
+ * å¦‚æœäº¤äºä¸€ç‚¹ï¼Œè¿”å›ä¸‰æ¡
+ * åœ¨è¾“å…¥çš„è¾¹ä¸Šè¿›è¡Œä¿®æ”¹
+ * åˆ¤æ–­å­˜åœ¨çš„æ—¶å€™ n > 2
  */
-/**< Õâ¸öÊÇ°ëÆ½ÃæÆ½ĞĞ */
-bool isParallel( line_t const&a,line_t const&b ){return dcmp(a.angle-b.angle) == 0;}
-int HPI( line_t  l[] , int n ,point_t *poly ){
-    sort( l , l+n );
-    //ÍêÈ«Æ½ĞĞµÄ°ëÆ½ÃæÖ»È¡Ò»¸ö
-    n = unique(l,l+n,isParallel) - l;
-    int bot = 0;
-	int top = 1;
-	for(int i=2;i<n;++i){
-		//×îÇ°¶ËµÄÁ½¸ö°ëÆ½ÃæÏà½»
-		while( bot < top ){
-			point_t _p = lineCrossline( l[top-1],l[top] );
-			//pÔÚµ±Ç°°ëÆ½ÃæÍâ£¬³ö¶ÓÁĞ
-            if ( cross( l[i].a,l[i].b ,_p ) >= 0 )break;
-			else --top;
-		}
-		//×îµ×¶ËµÄÁ½¸ö°ëÆ½ÃæÏà½»
-		while( bot < top ){
-			point_t _p = lineCrossline( l[bot],l[bot+1] );
-			//pÔÚµ±Ç°°ëÆ½ÃæÍâ£¬³ö¶ÓÁĞ
-            if ( cross( l[i].a,l[i].b ,_p ) >= 0 )break;
-			else ++bot;
-		}
-		//¸³Öµ
-		l[++top] = l[i];
-	}
-	//ºó´¦Àí
-	while( bot < top ){
-        point_t _p = lineCrossline( l[top-1],l[top] );
-		//pÔÚµ±Ç°°ëÆ½ÃæÍâ£¬³ö¶ÓÁĞ
-		if ( cross( l[bot].a,l[bot].b ,_p ) >= 0 )break;
-		else --top;
-	}
-	while( bot < top ){
-        point_t _p = lineCrossline( l[bot],l[bot+1] );
-		//pÔÚµ±Ç°°ëÆ½ÃæÍâ£¬³ö¶ÓÁĞ
-		if ( cross( l[top].a,l[top].b ,_p ) >= 0 )break;
-		else  ++bot;
-	}
-    l[top+1] = l[bot];
-    for (int i = bot;i <= top;++i)
-        poly[i-bot] = lineCrossline(l[i],l[i+1]);
+/**< è¿™ä¸ªæ˜¯åŠå¹³é¢å¹³è¡Œ */
+bool isParallel(line_t const &a, line_t const &b) { return dcmp(a.angle - b.angle) == 0; }
 
-	return top - bot + 1 ;
+int HPI(line_t l[], int n, point_t *poly) {
+    sort(l, l + n);
+    //å®Œå…¨å¹³è¡Œçš„åŠå¹³é¢åªå–ä¸€ä¸ª
+    n = (int) (unique(l, l + n, isParallel) - l);
+    int bot = 0;
+    int top = 1;
+    for (int i = 2; i < n; ++i) {
+        //æœ€å‰ç«¯çš„ä¸¤ä¸ªåŠå¹³é¢ç›¸äº¤
+        while (bot < top) {
+            point_t _p = lineCrossline(l[top - 1], l[top]);
+            //påœ¨å½“å‰åŠå¹³é¢å¤–ï¼Œå‡ºé˜Ÿåˆ—
+            if (cross(l[i].a, l[i].b, _p) >= 0)break;
+            else --top;
+        }
+        //æœ€åº•ç«¯çš„ä¸¤ä¸ªåŠå¹³é¢ç›¸äº¤
+        while (bot < top) {
+            point_t _p = lineCrossline(l[bot], l[bot + 1]);
+            //påœ¨å½“å‰åŠå¹³é¢å¤–ï¼Œå‡ºé˜Ÿåˆ—
+            if (cross(l[i].a, l[i].b, _p) >= 0)break;
+            else ++bot;
+        }
+        //èµ‹å€¼
+        l[++top] = l[i];
+    }
+    //åå¤„ç†
+    while (bot < top) {
+        point_t _p = lineCrossline(l[top - 1], l[top]);
+        //påœ¨å½“å‰åŠå¹³é¢å¤–ï¼Œå‡ºé˜Ÿåˆ—
+        if (cross(l[bot].a, l[bot].b, _p) >= 0)break;
+        else --top;
+    }
+    while (bot < top) {
+        point_t _p = lineCrossline(l[bot], l[bot + 1]);
+        //påœ¨å½“å‰åŠå¹³é¢å¤–ï¼Œå‡ºé˜Ÿåˆ—
+        if (cross(l[top].a, l[top].b, _p) >= 0)break;
+        else ++bot;
+    }
+    l[top + 1] = l[bot];
+    for (int i = bot; i <= top; ++i)
+        poly[i - bot] = lineCrossline(l[i], l[i + 1]);
+
+    return top - bot + 1;
 }
 
-/**< Á½µã¼ÆËã Ö±ÏßÒ»°ãÊ½·½³Ì */
-void LineEquation(point_t const&a,point_t const&b ,int_t&A,int_t&B,int_t&C ){
-    assert( !(a==b) ); // assert( !(a.x==b.x));
+/**< ä¸¤ç‚¹è®¡ç®— ç›´çº¿ä¸€èˆ¬å¼æ–¹ç¨‹ */
+void LineEquation(point_t const &a, point_t const &b, int_t &A, int_t &B, int_t &C) {
+    assert(!(a == b)); // assert( !(a.x==b.x));
     A = b.y - a.y;
     B = a.x - b.x;
-    C = b.x*a.y - a.x*b.y;
+    C = b.x * a.y - a.x * b.y;
 }
 
 
-/**< Èı½ÇĞÎÍâ½ÓÔ²  */
+/**< ä¸‰è§’å½¢å¤–æ¥åœ†  */
 circle_t CircumscribedCircle(point_t p1, point_t p2, point_t p3) {
     double Bx = p2.x - p1.x, By = p2.y - p1.y;
     double Cx = p3.x - p1.x, Cy = p3.y - p1.y;
-    double D = 2 * (Bx*Cy - By*Cx);
-    double cx = (Cy*(Bx*Bx + By*By) - By*(Cx*Cx + Cy*Cy)) / D + p1.x;
-    double cy = (Bx*(Cx*Cx + Cy*Cy) - Cx*(Bx*Bx + By*By)) / D + p1.y;
+    double D = 2 * (Bx * Cy - By * Cx);
+    double cx = (Cy * (Bx * Bx + By * By) - By * (Cx * Cx + Cy * Cy)) / D + p1.x;
+    double cy = (Bx * (Cx * Cx + Cy * Cy) - Cx * (Bx * Bx + By * By)) / D + p1.y;
     point_t _p = point_t(cx, cy);
-    return circle_t(_p, Point2Point(p1,_p));
-}    //Èı½ÇĞÎÍâ½ÓÔ²
+    return circle_t(_p, Point2Point(p1, _p));
+}    //ä¸‰è§’å½¢å¤–æ¥åœ†
 
-/** Ïß¶ÎÉÏµÄÕûÊıµã
- *  Á½¸ö¶Ëµã×ø±ê²îµÄ¾ø¶ÔÖµµÄ gcd + 1
+/** çº¿æ®µä¸Šçš„æ•´æ•°ç‚¹
+ *  ä¸¤ä¸ªç«¯ç‚¹åæ ‡å·®çš„ç»å¯¹å€¼çš„ gcd + 1
  */
-/**  pick ¹«Ê½
- *  Ãæ»ı = ±ß½çµãÊı ¡Â 2 £« ÄÚ²¿µãÊı £­ 1
+/**  pick å…¬å¼
+ *  é¢ç§¯ = è¾¹ç•Œç‚¹æ•° Ã· 2 ï¼‹ å†…éƒ¨ç‚¹æ•° ï¼ 1
  */
-/** Õı·½ĞÎABCD,ÒÑÖª¶Ô¶¥µãA(X1,Y1),C(X3,Y3) (ÀûÓÃ¶Ô½ÇÏß¿ÉµÃÁíÍâÁ½µã)
+/** æ­£æ–¹å½¢ABCD,å·²çŸ¥å¯¹é¡¶ç‚¹A(X1,Y1),C(X3,Y3) (åˆ©ç”¨å¯¹è§’çº¿å¯å¾—å¦å¤–ä¸¤ç‚¹)
  *  x2:=(x1+x3+y3-y1)/2; y2:=(y1+y3+x1-x3)/2;
  *  x4:=(x1+x3-y3+y1)/2; y4:=(y1+y3-x1+x3)/2;
  */
 
 
 /// - - - - - - - - - - - - - - - - - - Code line - - - - - - - - - - - - - - - - - - - - - - - ///
-
-
 
