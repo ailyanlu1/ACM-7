@@ -1,22 +1,19 @@
-//
-// Created by icebeetle on 18-6-22.
-//
+/*
+ * @Date     : 2018/07/02
+ * @Author   : IceCory (icecory520@gmail.com)
+ * @Copyright(C): GPL 3.0
+**/
 
 #include <stdio.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-
+#include <unistd.h> //sleep
+#include <signal.h>
 
 void Kill(int signo) {
-    int t = 10;
-    while (t--)
-        printf("will be killed %d sec after\n", t);
-    _exit(0);
+    printf("ctrl+c will not work");
 }
 
 int main() {
     signal(SIGINT, Kill);
-    while (1);
+    sleep(100);
     return 0;
 }

@@ -28,6 +28,8 @@
 
 #define CLEAR(a) memset((a),0,sizeof(a))
 #define FLAG(a) memset((a),-1,sizeof(a))
+// 按位截取位 x的第startbit 位开始的len长的位数
+#define InterceptBit(x, startbit, len)  (((x)<<(31-(startbit)))>>(31-(len-1)))
 #define varName(x) #x
 #define deBug(exp) cout<< " == > " << #exp<<" : "<< (exp) << endl
 #define deBugp(exp1, exp2) cout<< " == > " << "(" << #exp1<<" : "<< (exp1) << "," << #exp2 << " : " << (exp2) << ")" << endl
@@ -39,6 +41,8 @@ using namespace std;
 typedef long long llt;
 double const eps = 1e-9;
 double const PI = acos(-1.0);
+
+inline int RandomNumble(int a, int b) { return (rand() % (b - a + 1)) + a; } //srand(x);
 
 template<typename T>
 T gcd(T a, T b) { return b == 0 ? a : gcd(b, a % b); }
@@ -70,21 +74,11 @@ void ArrayCin(T *a, int n, int pos = 0) { for (int i = pos; i < n; ++i) cin >> a
 
 template<typename T>
 void ArrayDisp(T *a, int n) {
-    cout << "===> : ";
+    cout << "=>: ";
     for (int i = 0; i < n; ++i)cout << std::right << setw(2) << a[i] << " ";
     cout << endl;
 }
 
-template<typename T>
-void ArrayDisp(T *a, int n, int m, int twoLen) {
-    for (int i = 0; i < n; ++i) {
-        for (int j = 0; j < m; ++j) {
-            cout << std::right << setw(2) << *(a + i * twoLen + j) << " ";
-        }
-        cout << endl;
-    }
-    cout << endl;
-}
 ///------------------- faster IO --------------------//
 
 namespace fastIo {
@@ -92,12 +86,12 @@ namespace fastIo {
     inline bool scan_d(T &ret) {
         char c;
         int sgn;
-        if (c = getchar(), c == EOF) return 0; //EOF
+        if (c = (char) getchar(), c == EOF) return 0; //EOF
         while (c != '-' && (c < '0' || c > '9'))
-            if ((c = getchar()) == EOF) return 0;
+            if ((c = (char) getchar()) == EOF) return 0;
         sgn = (c == '-') ? -1 : 1;
         ret = (c == '-') ? 0 : (c - '0');
-        while (c = getchar(), c >= '0' && c <= '9') ret = ret * 10 + (c - '0');
+        while (c = (char) getchar(), c >= '0' && c <= '9') ret = ret * 10 + (c - '0');
         ret *= sgn;
         return 1;
     }

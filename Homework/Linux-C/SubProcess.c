@@ -1,15 +1,16 @@
-//
-// Created by icebeetle on 18-6-22.
-//
+/*
+ * @Date     : 2018/07/02
+ * @Author   : IceCory (icecory520@gmail.com)
+ * @Copyright(C): GPL 3.0
+**/
+
 
 #include <stdio.h>
-#include <sys/types.h>
 #include <unistd.h>
 #include <wait.h>
 
 int Just(int x) {
-    for (int i = 2; i * i <= x; ++i)
-        if (!x % 2)return 0;
+    for (int i = 2; i * i <= x; ++i)if (x % i == 0)return 0;
     return 1;
 }
 
@@ -25,9 +26,7 @@ int main() {
             sum += Just(i) ? i : 0;
         printf("%d\n", sum);
         printf("child_proc(%d, ppid=%d)\n", getpid(), getppid());
-    } else {
-        printf("child_proc : %d\n", pid);
-        wait(NULL);
-    }
+    } else wait(NULL);
+
     return 0;
 }
