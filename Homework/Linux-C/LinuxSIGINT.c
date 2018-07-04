@@ -5,15 +5,15 @@
 **/
 
 #include <stdio.h>
-#include <unistd.h> //sleep
 #include <signal.h>
 
 void Kill(int signo) {
-    printf("ctrl+c will not work");
+    printf("ctrl+c will not work\n");
+    signal(SIGINT, SIG_DFL);
 }
 
 int main() {
     signal(SIGINT, Kill);
-    sleep(100);
+    while (1);
     return 0;
 }

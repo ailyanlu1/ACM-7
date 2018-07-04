@@ -1,3 +1,4 @@
+#!/bin/sh
 # @Date     : 2018/07/02
 # @Author   : IceCory (icecory520@gmail.com)
 # @Copyright(C): GPL 3.0
